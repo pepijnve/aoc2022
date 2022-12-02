@@ -6,11 +6,46 @@ import java.nio.file.Paths;
 
 public class Day2 {
     public enum Shape {
-        ROCK, PAPER, SCISSORS
+        ROCK, PAPER, SCISSORS;
+
+        public Shape shapeForOutcome(Outcome desiredOutcome) {
+            Shape[] values = Shape.values();
+            return switch (desiredOutcome) {
+                case WIN -> values[(ordinal() + 1) % values.length];
+                case LOSE -> values[(values.length + ordinal() - 1) % values.length];
+                case DRAW -> this;
+            };
+        }
+
+        public Outcome outcomeForShape(Shape otherShape) {
+            if (shapeForOutcome(Outcome.WIN) == otherShape) {
+                return Outcome.WIN;
+            } else if (shapeForOutcome(Outcome.LOSE) == otherShape) {
+                return Outcome.LOSE;
+            } else {
+                return Outcome.DRAW;
+            }
+        }
+
+        public int score() {
+            return switch (this) {
+                case ROCK -> 1;
+                case PAPER -> 2;
+                case SCISSORS -> 3;
+            };
+        }
     }
 
     public enum Outcome {
-        WIN, LOSE, DRAW
+        WIN, LOSE, DRAW;
+
+        public int score() {
+            return switch (this) {
+                case WIN -> 6;
+                case DRAW -> 3;
+                case LOSE -> 0;
+            };
+        }
     }
 
     public record Game(Shape otherShape, Outcome outcome) {
@@ -52,44 +87,13 @@ public class Day2 {
     }
 
     public static int score(Draw draw) {
-        return switch (draw.myShape) {
-            case ROCK -> 1 + switch (draw.otherShape) {
-                case ROCK -> 3;
-                case PAPER -> 0;
-                case SCISSORS -> 6;
-            };
-            case PAPER -> 2 + switch (draw.otherShape) {
-                case ROCK -> 6;
-                case PAPER -> 3;
-                case SCISSORS -> 0;
-            };
-            case SCISSORS -> 3 + switch (draw.otherShape) {
-                case ROCK -> 0;
-                case PAPER -> 6;
-                case SCISSORS -> 3;
-            };
-        };
+        return draw.myShape.score() + draw.otherShape.outcomeForShape(draw.myShape).score();
     }
 
     public static Draw gameToDraw(Game game) {
         return new Draw(
                 game.otherShape,
-                switch (game.otherShape) {
-                    case ROCK -> switch (game.outcome) {
-                        case DRAW -> Shape.ROCK;
-                        case WIN -> Shape.PAPER;
-                        case LOSE -> Shape.SCISSORS;
-                    };
-                    case PAPER -> switch (game.outcome) {
-                        case DRAW -> Shape.PAPER;
-                        case WIN -> Shape.SCISSORS;
-                        case LOSE -> Shape.ROCK;
-                    };
-                    case SCISSORS -> switch (game.outcome) {
-                        case DRAW -> Shape.SCISSORS;
-                        case WIN -> Shape.ROCK;
-                        case LOSE -> Shape.PAPER;
-                    };
-                });
+                game.otherShape.shapeForOutcome(game.outcome)
+        );
     }
 }
