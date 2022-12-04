@@ -45,27 +45,31 @@ public class Day3 {
         }
     }
 
-    public static class Grouping {
+    public static class Grouper {
+        private final int groupSize;
         private int group = 1;
         private int count = 0;
 
+        public Grouper(int groupSize) {
+            this.groupSize = groupSize;
+        }
+
         public int group() {
-            if (count == 3) {
-                count = 1;
+            if (count == groupSize) {
+                count = 0;
                 group++;
-            } else {
-                count++;
             }
+            count++;
             return group;
         }
     }
 
     public static void main(String[] args) throws IOException {
-        Grouping grouping = new Grouping();
+        Grouper grouper = new Grouper(3);
 
         Map<Integer, List<RuckSack>> groups = Files.readAllLines(Paths.get("day3_input.txt"))
                 .stream()
-                .map(line -> Day3.parseLine(line, grouping))
+                .map(line -> Day3.parseLine(line, grouper))
                 .collect(Collectors.groupingBy(RuckSack::group));
 
         int sumOfIncorrectItems = groups.values()
@@ -85,7 +89,7 @@ public class Day3 {
         System.out.println("sumOfBadges = " + sumOfBadges);
     }
 
-    public static RuckSack parseLine(String line, Grouping grouping) {
+    public static RuckSack parseLine(String line, Grouper grouping) {
         int split = line.length() / 2;
         String c1 = line.substring(0, split);
         String c2 = line.substring(split);
